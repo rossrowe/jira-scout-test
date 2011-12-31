@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.saucelabs</groupId>
+    <artifactId>jira-sauce-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <organization>
+        <name>Example Company</name>
+        <url>http://www.example.com/</url>
+    </organization>
+
+    <name>jira-sauce-test</name>
+    <description>This is the com.saucelabs:jira-sauce-test plugin for Atlassian JIRA.</description>
+    <packaging>atlassian-plugin</packaging>
+
+    <dependencies>
+        <!-- CustomWare Connector Suite dependencies -->
+        <dependency>
+            <groupId>net.customware.plugins.connector.core</groupId>
+            <artifactId>core-connector-plugin</artifactId>
+            <version>${core.connector.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.customware.plugins.connector.atlassian</groupId>
+            <artifactId>jira-connector-plugin</artifactId>
+            <version>${jira.connector.version}</version>
+            <scope>provided</scope>
+        </dependency>       
+        <dependency>
+            <groupId>net.customware.plugins.connector.atlassian</groupId>
+            <artifactId>saucelabs-connector-plugin</artifactId>
+            <version>${jira.connector.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Add dependency on jira-core if you want access to JIRA implementation classes as well as the sanctioned API. -->
+        <!-- This is not normally recommended, but may be required eg when migrating a plugin originally developed against JIRA 4.x -->
+        <!--
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-core</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-tests</artifactId>
+            <version>${jira.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-func-tests</artifactId>
+            <version>${jira.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-control</artifactId>
+            <version>2.0b3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>2.12.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-jira-plugin</artifactId>
+                <version>3.7.2</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <httpPort>${jira.port}</httpPort>
+                    <contextPath>${jira.context.path}</contextPath>
+                    <output>${project.build.directory}/jira-${jira.version}.log</output>
+                    <products>
+                        <product>
+                            <id>jira</id>
+                            <version>${jira.version}</version>
+                            <dataVersion>${jira.data.version}</dataVersion>
+                        </product>
+                    </products>
+                    <testGroups>
+                        <testGroup>
+                            <id>salesforce-jira</id>
+                            <productIds>
+                                <productId>jira</productId>
+                            </productIds>
+                            <includes>
+                                <include>it/**/*FuncTest.java</include>
+                            </includes>
+                        </testGroup>
+                    </testGroups>
+                    <pluginArtifacts>
+                        <!-- Atlassian dependencies -->
+                        <pluginArtifact>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>activeobjects-plugin</artifactId>
+                            <version>${ao.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>${jira.ao.spi}</artifactId>
+                            <version>${ao.version}</version>
+                        </pluginArtifact>
+
+                        <!-- Connector dependencies -->
+                        <pluginArtifact>
+                            <groupId>net.customware.plugins.connector.core</groupId>
+                            <artifactId>core-connector-plugin</artifactId>
+                            <version>${core.connector.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>net.customware.plugins.connector.atlassian</groupId>
+                            <artifactId>jira-connector-plugin</artifactId>
+                            <version>${jira.connector.version}</version>
+                        </pluginArtifact>
+                        <pluginArtifact>
+                            <groupId>net.customware.plugins.connector.atlassian</groupId>
+                            <artifactId>saucelabs-connector-plugin</artifactId>
+                            <version>${jira.connector.version}</version>
+                        </pluginArtifact>
+                    </pluginArtifacts>
+                    <pluginDependencies>
+                        <!-- Atlassian dependencies -->
+                        <pluginDependency>
+                            <groupId>com.atlassian.activeobjects</groupId>
+                            <artifactId>activeobjects-plugin</artifactId>
+                        </pluginDependency>
+
+                        <!-- Connector dependencies -->
+                        <pluginDependency>
+                            <groupId>net.customware.plugins.connector.core</groupId>
+                            <artifactId>core-connector-plugin</artifactId>
+                        </pluginDependency>
+                        <pluginDependency>
+                            <groupId>net.customware.plugins.connector.atlassian</groupId>
+                            <artifactId>jira-connector-plugin</artifactId>
+                        </pluginDependency>
+                        <pluginDependency>
+                            <groupId>net.customware.plugins.connector.atlassian</groupId>
+                            <artifactId>saucelabs-connector-plugin</artifactId>
+                        </pluginDependency>
+                    </pluginDependencies>
+                    <instructions>
+                        <Bundle-SymbolicName>${atlassian.plugin.key}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Require-Bundle>
+                            com.atlassian.activeobjects.activeobjects-plugin,
+                            net.customware.plugins.connector.core.core-connector-plugin,
+                            net.customware.plugins.connector.atlassian.jira-connector-plugin,
+                            net.customware.plugins.connector.atlassian.saucelabs-connector-plugin
+                        </Require-Bundle>
+                        <Export-Package/>
+                        <Private-Package/>
+                        <Import-Package>
+                            com.atlassian.applinks.*,
+                            net.customware.plugins.connector.jira*;version="1.0.0",
+                            net.customware.plugins.connector.core*;version="1.0.0",
+                            net.customware.plugins.connector.saucelabs*;version="1.0.0",
+                            net.customware.license*;version="1.0.0",
+                            javax.xml.namespace,
+                            javax.xml.rpc,
+                            org.apache.axis*,
+                            de.schlichtherle*,
+                            javax.security.auth.x500,
+                            *;resolution:=optional
+                        </Import-Package>
+                        <DynamicImport-Package/>
+                        <Spring-Context>*;timeout:=60</Spring-Context>
+                    </instructions>
+                    <systemPropertyVariables>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
+    <properties>
+        <!-- TODO: Update to 5.0 after release of 5.0 final -->
+        <jira.version>5.0-beta1</jira.version>
+        <amps.version>3.7.2</amps.version>
+        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
+        <atlassian.plugin.name>${project.name}</atlassian.plugin.name>
+        <jira.port>2990</jira.port>
+        <jira.context.path>/jira</jira.context.path>
+        <ao.version>0.15</ao.version>
+        <jira.ao.spi>activeobjects-jira-spi</jira.ao.spi>
+        <!-- Framework dependency versions -->
+        <core.connector.version>1.1</core.connector.version>
+        <jira.connector.version>1.1</jira.connector.version>
+        <jira.data.version>${jira.version}</jira.data.version>
+    </properties>
+
+</project>
