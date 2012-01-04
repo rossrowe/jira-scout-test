@@ -1,4 +1,4 @@
-package com.example.tests;
+package com.saucelabs;
 
 import java.util.regex.Pattern;
 import java.util.concurrent.TimeUnit;
@@ -16,12 +16,13 @@ public class SyncTest {
 	@Before
 	public void setUp() throws Exception {
 		driver = new FirefoxDriver();
-		baseUrl = "http://imac.local:2990/";
+		baseUrl = "http://localhost:2990/";
 		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 	}
 
 	@Test
 	public void testSync() throws Exception {
+		//add a new mapping between Jira/Environment and Scount/Browser 
 		driver.get(baseUrl + "/jira/plugins/servlet/customware/connector/config.action");
 		driver.findElement(By.cssSelector("#customwareconnectormappingwebitem_tab > strong")).click();
 		driver.findElement(By.id("mappingedit1")).click();
@@ -32,6 +33,8 @@ public class SyncTest {
 		new Select(driver.findElement(By.name("mapRemoteField"))).selectByVisibleText("Browser");
 		driver.findElement(By.name("Add")).click();
 		driver.findElement(By.id("leave_admin")).click();
+		
+		//Trigger a synchronization
 		driver.findElement(By.cssSelector("#browse_link_drop > span")).click();
 		driver.findElement(By.id("admin_main_proj_link_lnk")).click();
 		driver.findElement(By.linkText("SL-1")).click();
@@ -39,6 +42,8 @@ public class SyncTest {
 		driver.findElement(By.id("connector-issue-links")).click();
 		driver.findElement(By.id("connector-pull-changes-1-1")).click();
 		driver.findElement(By.id("key-val")).click();
+		
+		//validate that the Browser value has been copied into Jira
 	}
 
 	@After
