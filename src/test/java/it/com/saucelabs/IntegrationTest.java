@@ -15,14 +15,30 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.Select;
 
 public class IntegrationTest {
+	
+	public static final int PORT = 5000;
+    protected static final String DEFAULT_SAUCE_DRIVER = "sauce-ondemand:?max-duration=60&os=windows 2008&browser=firefox&browser-version=4.";
 	private WebDriver driver;
 	private String baseUrl;
 	private StringBuffer verificationErrors = new StringBuffer();
 	private static final String firefox = "E:/Program Files/Firefox/firefox.exe";
 	@Before
 	public void setUp() throws Exception {		
-		driver = new FirefoxDriver();
-		baseUrl = "http://localhost:2990/jira";
+		
+		SauceTunnelManager sauceTunnelManager = new SauceConnectTwoManager();
+        Process sauceConnect = (Process) sauceTunnelManager.openConnection(c.getUsername(), c.getKey());
+        sauceTunnelManager.addTunnelToMap("TEST", sauceConnect);
+        System.out.println("tunnel established");
+        String driver = System.getenv("SELENIUM_DRIVER");
+        if (driver == null || driver.equals("")) {
+            System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
+        }
+
+        String originalUrl = System.getenv("SELENIUM_STARTING_URL");
+        System.setProperty("SELENIUM_STARTING_URL", "http://localhost:" + PORT + "/jira");
+        driver = SeleniumFactory.createWebDriver();
+		//driver = new FirefoxDriver();
+		baseUrl = "http://localhost:" + PORT + "/jira";
 		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 	}
 
@@ -132,6 +148,7 @@ public class IntegrationTest {
 	@After
 	public void tearDown() throws Exception {
 		driver.quit();
+		sauceTunnelManager.closeTunnelsForPlan(DUMMY_PLAN_KEY);
 		String verificationErrorString = verificationErrors.toString();
 		if (!"".equals(verificationErrorString)) {
 			fail(verificationErrorString);
