@@ -21,7 +21,7 @@ import static org.junit.Assert.fail;
 public class IntegrationTest {
 
     public static final int PORT = 5000;
-    protected static final String DEFAULT_SAUCE_DRIVER = "sauce-ondemand:?max-duration=60&os=windows 2008&browser=firefox&browser-version=4.";
+    protected static final String DEFAULT_SAUCE_DRIVER = "sauce-ondemand:?max-duration=60&os=windows 2008&browser=firefox&browser-version=8.";
     private WebDriver driver;
     private String baseUrl;
     private StringBuffer verificationErrors = new StringBuffer();
@@ -49,11 +49,10 @@ public class IntegrationTest {
         System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
         System.setProperty("SELENIUM_PORT", "4445");
         System.setProperty("SELENIUM_HOST", "localhost");
-//        System.setProperty("SELENIUM_STARTING_URL", "http://localhost:" + PORT + "/jira/secure/AdminSummary.jspa");
-        System.setProperty("SELENIUM_STARTING_URL", "http://www.google.com");
+        System.setProperty("SELENIUM_STARTING_URL", "http://localhost:" + PORT + "/jira/secure/AdminSummary.jspa?os_username=admin&os_password=admin");
 
         driver = SeleniumFactory.createWebDriver();
-        //driver = new FirefoxDriver();
+
         baseUrl = "http://localhost:" + PORT + "/jira";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     }
@@ -62,28 +61,21 @@ public class IntegrationTest {
     public void testIntegration() throws Exception {
 
         //go to administration
-        driver.get(baseUrl + "/secure/AdminSummary.jspa");
-        //login
-        driver.findElement(By.id("login-form-username")).clear();
-        driver.findElement(By.id("login-form-username")).sendKeys("admin");
-        driver.findElement(By.id("login-form-password")).clear();
-        driver.findElement(By.id("login-form-password")).sendKeys("admin");
-        driver.findElement(By.id("login-form-submit")).click();
+        driver.get(baseUrl + "/secure/AdminSummary.jspa?os_username=admin&os_password=admin");
 
         //create project
-        driver.findElement(By.id("add_first_project")).click();
-        driver.findElement(By.name("name")).clear();
-        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
-        driver.findElement(By.name("key")).clear();
-        driver.findElement(By.name("key")).sendKeys("SL");
-        driver.findElement(By.id("add-project-submit")).click();
+//        driver.findElement(By.id("add_first_project")).click();
+//        driver.findElement(By.name("name")).clear();
+//        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
+//        driver.findElement(By.name("key")).clear();
+//        driver.findElement(By.name("key")).sendKeys("SL");
+//        driver.findElement(By.id("add-project-submit")).click();
 
-        //add a new connector
-//		driver.findElement(By.cssSelector("#admin_plugins_menu_drop > span")).click();
-//		driver.findElement(By.xpath("//a[@id='upm_section']")).click();
+        
         //TODO validate that plugins are installed
-
-        driver.get(baseUrl + "/plugins/servlet/customware/connector/applinks/config.action?type=saucelabs");
+        driver.findElement(By.cssSelector("#admin_plugins_menu_drop > span")).click();
+        driver.findElement(By.id("customwareconnectorconnectionwebitem")).click();
+//        driver.get(baseUrl + "/plugins/servlet/customware/connector/applinks/config.action?type=saucelabs");
         //check to see if license agreement appears, if so, click it
         if (By.name("submit") != null) {
             driver.findElement(By.name("submit")).click();
