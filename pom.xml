@@ -31,7 +31,7 @@
             <artifactId>jira-connector-plugin</artifactId>
             <version>${jira.connector.version}</version>
             <scope>provided</scope>
-        </dependency>       
+        </dependency>
         <dependency>
             <groupId>net.customware.plugins.connector.atlassian</groupId>
             <artifactId>saucelabs-connector-plugin</artifactId>
@@ -77,7 +77,7 @@
             <artifactId>jira-func-tests</artifactId>
             <version>${jira.version}</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-remote-control</artifactId>
@@ -90,7 +90,7 @@
             <version>2.12.0</version>
             <scope>test</scope>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.saucelabs.selenium</groupId>
             <artifactId>sauce-ondemand-driver</artifactId>
             <version>2.0</version>
@@ -103,27 +103,27 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-        <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-server</artifactId>
-        <version>2.16.0</version>
-    </dependency>  
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-server</artifactId>
+            <version>2.16.0</version>
+        </dependency>
         <dependency>
             <groupId>com.saucelabs</groupId>
             <artifactId>ci-sauce</artifactId>
             <version>1.1</version>
             <scope>compile</scope>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>com.saucelabs</groupId>
             <artifactId>sauce-connect</artifactId>
             <version>3.0</version>
             <scope>test</scope>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.seleniumhq.webdriver</groupId>-->
-            <!--<artifactId>webdriver-selenium</artifactId>-->
-            <!--<version>0.9.7089</version>-->
-            <!--<scope>test</scope>-->
+        <!--<groupId>org.seleniumhq.webdriver</groupId>-->
+        <!--<artifactId>webdriver-selenium</artifactId>-->
+        <!--<version>0.9.7089</version>-->
+        <!--<scope>test</scope>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -280,7 +280,8 @@
         <jira.data.version>${jira.version}</jira.data.version>
     </properties>
 
-    <profile>
+    <profiles>
+        <profile>
             <id>defaultProfile</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
