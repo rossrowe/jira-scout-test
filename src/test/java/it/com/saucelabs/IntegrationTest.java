@@ -6,14 +6,13 @@ import com.saucelabs.selenium.client.factory.SeleniumFactory;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Select;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
@@ -25,7 +24,6 @@ public class IntegrationTest {
     private WebDriver driver;
     private String baseUrl;
     private StringBuffer verificationErrors = new StringBuffer();
-    private static final String firefox = "E:/Program Files/Firefox/firefox.exe";
     private SauceConnectTwoManager sauceTunnelManager;
     public static final String DUMMY_KEY = "TEST";
 
@@ -46,36 +44,53 @@ public class IntegrationTest {
         sauceTunnelManager = new SauceConnectTwoManager();
         Process sauceConnect = (Process) sauceTunnelManager.openConnection(c.getUsername(), c.getKey());
         sauceTunnelManager.addTunnelToMap(DUMMY_KEY, sauceConnect);
+        String hostName= InetAddress.getLocalHost().getHostName();
+//        hostName = "localhost";
         System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
         System.setProperty("SELENIUM_PORT", "4445");
         System.setProperty("SELENIUM_HOST", "localhost");
-        System.setProperty("SELENIUM_STARTING_URL", "http://localhost:" + PORT + "/jira/secure/AdminSummary.jspa?os_username=admin&os_password=admin");
+        System.setProperty("SELENIUM_STARTING_URL", "http://" + hostName + ":" + PORT + "/jira/secure/AdminSummary.jspa");
 
         driver = SeleniumFactory.createWebDriver();
 
-        baseUrl = "http://localhost:" + PORT + "/jira";
+//        ProfilesIni allProfiles = new ProfilesIni();
+//        FirefoxProfile profile = allProfiles.getProfile("selenium");
+//        driver = new FirefoxDriver(profile);
+
+        baseUrl = "http://" + hostName + ":" + PORT + "/jira";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     }
 
     @Test
-    public void testIntegration() throws Exception {
+    public void runTests() throws Exception {
+        initialize();
+        runExportToJira();
+        synchronizeChange();
+    }
 
-        //go to administration
-        driver.get(baseUrl + "/secure/AdminSummary.jspa?os_username=admin&os_password=admin");
+    public void initialize() throws Exception {
 
+        driver.get(baseUrl + "/secure/AdminSummary.jspa");
+        //login
+        driver.findElement(By.id("login-form-username")).clear();
+        driver.findElement(By.id("login-form-username")).sendKeys("admin");
+        driver.findElement(By.id("login-form-password")).clear();
+        driver.findElement(By.id("login-form-password")).sendKeys("admin");
+        driver.findElement(By.id("login-form-submit")).click();
         //create project
-//        driver.findElement(By.id("add_first_project")).click();
-//        driver.findElement(By.name("name")).clear();
-//        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
-//        driver.findElement(By.name("key")).clear();
-//        driver.findElement(By.name("key")).sendKeys("SL");
-//        driver.findElement(By.id("add-project-submit")).click();
+        driver.findElement(By.id("add_first_project")).click();
+        driver.findElement(By.name("name")).clear();
+        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
+        driver.findElement(By.name("key")).clear();
+        driver.findElement(By.name("key")).sendKeys("SL");
+        driver.findElement(By.id("add-project-submit")).click();
 
-        
+
         //TODO validate that plugins are installed
-        driver.findElement(By.cssSelector("#admin_plugins_menu_drop > span")).click();
-        driver.findElement(By.id("customwareconnectorconnectionwebitem")).click();
-//        driver.get(baseUrl + "/plugins/servlet/customware/connector/applinks/config.action?type=saucelabs");
+//        driver.findElement(By.cssSelector("#admin_plugins_menu_drop > span")).click();
+//        driver.findElement(By.id("customwareconnectorconnectionwebitem")).click();
+
+        driver.get(baseUrl + "/plugins/servlet/customware/connector/applinks/config.action?type=saucelabs");
         //check to see if license agreement appears, if so, click it
         if (By.name("submit") != null) {
             driver.findElement(By.name("submit")).click();
@@ -115,22 +130,17 @@ public class IntegrationTest {
         driver.findElement(By.id("create_config")).click();
     }
 
-    @Test
-    @Ignore
-    public void exportToJira() throws Exception {
-        //TODO Go to Scout - My Bugs and export to Jira
-        driver.findElement(By.linkText("Export to JIRA")).click();
-        new Select(driver.findElement(By.id("projectField"))).selectByVisibleText("Sauce Labs");
+    public void runExportToJira() throws Exception {
+        driver.get(baseUrl + "/plugins/servlet/customware/connector/issue/1/1/create.action?id=8d9d40cccc1192b9c9c88afc2c70ebb8");
+		new Select(driver.findElement(By.id("projectField"))).selectByVisibleText("Sauce Labs");
         driver.findElement(By.name("create")).click();
 
-        //Verify that bug has been created
+        //TODO verify that bug has been created
     }
 
-    @Test
-    @Ignore
     public void synchronizeChange() throws Exception {
         //add a new mapping between Jira/Environment and Scount/Browser
-        driver.get(baseUrl + "/jira/plugins/servlet/customware/connector/config.action");
+        driver.get(baseUrl + "/plugins/servlet/customware/connector/config.action");
         driver.findElement(By.cssSelector("#customwareconnectormappingwebitem_tab > strong")).click();
         driver.findElement(By.id("mappingedit1")).click();
         driver.findElement(By.cssSelector("#customwareconnectormappingschemewebitem_tab > strong")).click();
@@ -142,15 +152,14 @@ public class IntegrationTest {
         driver.findElement(By.id("leave_admin")).click();
 
         //Trigger a synchronization
-        driver.findElement(By.cssSelector("#browse_link_drop > span")).click();
-        driver.findElement(By.id("admin_main_proj_link_lnk")).click();
-        driver.findElement(By.linkText("SL-1")).click();
-        driver.findElement(By.cssSelector("span.icon.drop-menu")).click();
+        driver.get(baseUrl + "/browse/SL-1");
+        driver.findElement(By.id("opsbar-operations_more")).click();
+
         driver.findElement(By.id("connector-issue-links")).click();
         driver.findElement(By.id("connector-pull-changes-1-1")).click();
         driver.findElement(By.id("key-val")).click();
 
-        //validate that the Browser value has been copied into Jira
+        //TODO validate that the Browser value has been copied into Jira
     }
 
     @After
@@ -169,12 +178,4 @@ public class IntegrationTest {
         }
     }
 
-    private boolean isElementPresent(By by) {
-        try {
-            driver.findElement(by);
-            return true;
-        } catch (NoSuchElementException e) {
-            return false;
-        }
-    }
 }
