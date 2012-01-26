@@ -45,6 +45,7 @@ public class IntegrationTest {
         Process sauceConnect = (Process) sauceTunnelManager.openConnection(c.getUsername(), c.getKey());
         sauceTunnelManager.addTunnelToMap(DUMMY_KEY, sauceConnect);
         String hostName= InetAddress.getLocalHost().getHostName();
+        System.out.println("Host name: " + hostName);
 //        hostName = "localhost";
         System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
         System.setProperty("SELENIUM_PORT", "4445");
