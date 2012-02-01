@@ -13,6 +13,9 @@ import org.openqa.selenium.support.ui.Select;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
@@ -47,6 +50,8 @@ public class IntegrationTest {
         sauceTunnelManager.addTunnelToMap(DUMMY_KEY, sauceConnect);
         hostName = InetAddress.getLocalHost().getHostName();
         System.out.println("Host name: " + hostName);
+        System.out.println("Host name: " + getHostName());
+        System.out.println("Computer name: " + InetAddress.getByName("computername"));
         //hostName = "localhost";
         System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
         System.setProperty("SELENIUM_PORT", "4445");
@@ -62,6 +67,44 @@ public class IntegrationTest {
         baseUrl = "http://" + hostName + ":" + PORT + "/jira";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     }
+
+    private String getHostName() {
+
+        try {
+            // Replace eth0 with your interface name
+            NetworkInterface i = null;
+
+            i = NetworkInterface.getByName("eth0");
+
+
+            if (i != null) {
+
+                Enumeration<InetAddress> iplist = i.getInetAddresses();
+
+                InetAddress addr = null;
+
+                while (iplist.hasMoreElements()) {
+                    InetAddress ad = iplist.nextElement();
+                    byte bs[] = ad.getAddress();
+                    if (bs.length == 4 && bs[0] != 127) {
+                        addr = ad;
+                        // You could also display the host name here, to
+                        // see the whole list, and remove the break.
+                        break;
+                    }
+                }
+
+                if (addr != null) {
+                    return addr.getCanonicalHostName();
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+
+    }
+
 
     @Test
     public void runTests() throws Exception {
