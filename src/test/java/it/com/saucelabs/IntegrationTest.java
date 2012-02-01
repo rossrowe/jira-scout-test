@@ -178,6 +178,7 @@ public class IntegrationTest {
     }
 
     private void addApplicationLink() {
+        driver.findElement(By.id("admin_summary")).click();
         driver.findElement(By.cssSelector("#admin-summary-section-admin_plugins_menu > #ual_section > li > a")).click();
         driver.findElement(By.id("add-first-application-link")).click();
         driver.findElement(By.id("application-url")).clear();
