@@ -113,7 +113,7 @@ public class IntegrationTest {
     public void runTests() throws Exception {
         initialize();
         runExportToJira();
-        //synchronizeChange();
+        synchronizeChange();
     }
 
     public void initialize() throws Exception {
