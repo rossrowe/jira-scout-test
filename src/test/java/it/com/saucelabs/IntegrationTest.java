@@ -2,14 +2,20 @@ package it.com.saucelabs;
 
 import com.saucelabs.ci.sauceconnect.SauceConnectTwoManager;
 import com.saucelabs.rest.Credential;
-import com.saucelabs.selenium.client.factory.SeleniumFactory;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -45,27 +51,22 @@ public class IntegrationTest {
                 credential.saveTo(sauceSettings);
             }
         }
-        Credential c = new Credential();
-        sauceTunnelManager = new SauceConnectTwoManager();
-        Process sauceConnect = (Process) sauceTunnelManager.openConnection(c.getUsername(), c.getKey());
-        sauceTunnelManager.addTunnelToMap(DUMMY_KEY, sauceConnect);
-//        hostName = InetAddress.getLocalHost().getHostName();
-        hostName = getHostName();
-//        System.out.println("Host name: " + hostName);
-//        System.out.println("Host name: " + getHostName());
-//        System.out.println("Lan name: " + getLocalHostLANAddress());
-//        System.out.println("Computer name: " + InetAddress.getByName("computername"));
-        //hostName = "localhost";
+//        Credential c = new Credential();
+//        sauceTunnelManager = new SauceConnectTwoManager();
+//        Process sauceConnect = (Process) sauceTunnelManager.openConnection(c.getUsername(), c.getKey());
+//        sauceTunnelManager.addTunnelToMap(DUMMY_KEY, sauceConnect);
+//        hostName = getHostName();
+        hostName = "localhost";
         System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
         System.setProperty("SELENIUM_PORT", "4445");
         System.setProperty("SELENIUM_HOST", "localhost");
         System.setProperty("SELENIUM_STARTING_URL", "http://" + hostName + ":" + PORT + "/jira/secure/AdminSummary.jspa");
 
-        driver = SeleniumFactory.createWebDriver();
+//        driver = SeleniumFactory.createWebDriver();
 //
-//        ProfilesIni allProfiles = new ProfilesIni();
-//        FirefoxProfile profile = allProfiles.getProfile("selenium");
-//        driver = new FirefoxDriver(profile);
+        ProfilesIni allProfiles = new ProfilesIni();
+        FirefoxProfile profile = allProfiles.getProfile("selenium");
+        driver = new FirefoxDriver(profile);
 
         baseUrl = "http://" + hostName + ":" + PORT + "/jira";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
@@ -250,8 +251,23 @@ public class IntegrationTest {
         driver.findElement(By.id("connector-issue-links")).click();
         driver.findElement(By.id("connector-pull-changes-1-1")).click();
         driver.findElement(By.id("key-val")).click();
+        driver.get(baseUrl + "/browse/SL-1");
+        Wait<WebDriver> wait = new WebDriverWait(driver, 30);
+        WebElement element= wait.until(visibilityOfElementLocated(By.id("environment-val")));
 
         //TODO validate that the Browser value has been copied into Jira
+    }
+
+    public ExpectedCondition<WebElement> visibilityOfElementLocated(final By locator) {
+        return new ExpectedCondition<WebElement>() {
+            public WebElement apply(WebDriver driver) {
+                WebElement toReturn = driver.findElement(locator);
+                if (toReturn.isDisplayed()) {
+                    return toReturn;
+                }
+                return null;
+            }
+        };
     }
 
     @After
@@ -266,7 +282,7 @@ public class IntegrationTest {
                 fail(verificationErrorString);
             }
         } finally {
-            sauceTunnelManager.closeTunnelsForPlan(DUMMY_KEY);
+//            sauceTunnelManager.closeTunnelsForPlan(DUMMY_KEY);
         }
     }
 
