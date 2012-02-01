@@ -26,6 +26,7 @@ public class IntegrationTest {
     private StringBuffer verificationErrors = new StringBuffer();
     private SauceConnectTwoManager sauceTunnelManager;
     public static final String DUMMY_KEY = "TEST";
+    private String hostName;
 
 
     @Before
@@ -44,16 +45,16 @@ public class IntegrationTest {
         sauceTunnelManager = new SauceConnectTwoManager();
         Process sauceConnect = (Process) sauceTunnelManager.openConnection(c.getUsername(), c.getKey());
         sauceTunnelManager.addTunnelToMap(DUMMY_KEY, sauceConnect);
-        String hostName= InetAddress.getLocalHost().getHostName();
+        hostName = InetAddress.getLocalHost().getHostName();
         System.out.println("Host name: " + hostName);
-//        hostName = "localhost";
+        //hostName = "localhost";
         System.setProperty("SELENIUM_DRIVER", DEFAULT_SAUCE_DRIVER);
         System.setProperty("SELENIUM_PORT", "4445");
         System.setProperty("SELENIUM_HOST", "localhost");
         System.setProperty("SELENIUM_STARTING_URL", "http://" + hostName + ":" + PORT + "/jira/secure/AdminSummary.jspa");
 
         driver = SeleniumFactory.createWebDriver();
-
+//
 //        ProfilesIni allProfiles = new ProfilesIni();
 //        FirefoxProfile profile = allProfiles.getProfile("selenium");
 //        driver = new FirefoxDriver(profile);
@@ -66,74 +67,117 @@ public class IntegrationTest {
     public void runTests() throws Exception {
         initialize();
         runExportToJira();
-        synchronizeChange();
+        //synchronizeChange();
     }
 
     public void initialize() throws Exception {
 
         driver.get(baseUrl + "/secure/AdminSummary.jspa");
-        //login
-        driver.findElement(By.id("login-form-username")).clear();
-        driver.findElement(By.id("login-form-username")).sendKeys("admin");
-        driver.findElement(By.id("login-form-password")).clear();
-        driver.findElement(By.id("login-form-password")).sendKeys("admin");
-        driver.findElement(By.id("login-form-submit")).click();
+        login();
         //create project
-        driver.findElement(By.id("add_first_project")).click();
-        driver.findElement(By.name("name")).clear();
-        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
-        driver.findElement(By.name("key")).clear();
-        driver.findElement(By.name("key")).sendKeys("SL");
-        driver.findElement(By.id("add-project-submit")).click();
+        createProject();
 
+        addApplicationLink();
+        addConnector();
+        displaySettings();
+        configureSauceIntegrations();
+    }
 
-        //TODO validate that plugins are installed
-//        driver.findElement(By.cssSelector("#admin_plugins_menu_drop > span")).click();
-//        driver.findElement(By.id("customwareconnectorconnectionwebitem")).click();
+    private void configureSauceIntegrations() {
+        //go to saucelabs.com/account/integrations
+        driver.get("https://saucelabs.com/account/integrations");
+        sauceLogin();
+        driver.findElement(By.name("instance_id")).click();
+        driver.findElement(By.name("instance_id")).clear();
+        driver.findElement(By.name("instance_id")).sendKeys("1");
+        driver.findElement(By.name("object_type_id")).click();
+        driver.findElement(By.name("object_type_id")).clear();
+        driver.findElement(By.name("object_type_id")).sendKeys("1");
+        driver.findElement(By.name("base_url")).click();
+        driver.findElement(By.name("base_url")).clear();
+        driver.findElement(By.name("base_url")).sendKeys(baseUrl);
+        driver.findElement(By.cssSelector("input[type=\"submit\"]")).click();
+    }
 
-        driver.get(baseUrl + "/plugins/servlet/customware/connector/applinks/config.action?type=saucelabs");
-        //check to see if license agreement appears, if so, click it
-        if (By.name("submit") != null) {
-            driver.findElement(By.name("submit")).click();
-            driver.get(baseUrl + "/plugins/servlet/customware/connector/applinks/config.action?type=saucelabs");
-        }
+    private void sauceLogin() {
+        driver.findElement(By.id("username")).sendKeys("rossco_9_9");
+        driver.findElement(By.id("password")).sendKeys("piasal");
+        driver.findElement(By.name("submit")).click();
+    }
 
-        driver.findElement(By.name("name")).clear();
-        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
-        driver.findElement(By.name("rpcurl")).clear();
-        driver.findElement(By.name("rpcurl")).sendKeys("https://saucelabs.com");
-        driver.findElement(By.name("displayurl")).clear();
-        driver.findElement(By.name("displayurl")).sendKeys("https://saucelabs.com");
-        driver.findElement(By.name("Add")).click();
+    private void displaySettings() {
 
-        driver.findElement(By.id("configauth-751dd8c8-be04-3477-b92a-5130cd39c6dd")).click();
-        driver.findElement(By.id("saucelabs.username")).clear();
-        driver.findElement(By.id("saucelabs.username")).sendKeys("rossco_9_9");
-        driver.findElement(By.id("saucelabs.token")).clear();
-        driver.findElement(By.id("saucelabs.token")).sendKeys("44f0744c-1689-4418-af63-560303cbb37b");
-        driver.findElement(By.cssSelector("input.button")).click();
+        driver.findElement(By.id("admin_summary")).click();
+        driver.findElement(By.cssSelector("#admin-summary-section-admin_plugins_menu > #customwareconnectorwebsection44 > li > a")).click();
+        driver.findElement(By.cssSelector("#customwareconnectormappingwebitem_tab > strong")).click();
+        driver.findElement(By.linkText("Configure")).click();
+        driver.findElement(By.cssSelector("h3.toggle-title")).click();
+    }
 
-        driver.get(baseUrl + "/secure/AdminSummary.jspa");
-
-        //add the connector
-        driver.findElement(By.cssSelector("#admin_plugins_menu_drop > span")).click();
-        driver.findElement(By.id("customwareconnectorconnectionwebitem")).click();
+    private void addConnector() {
+        driver.findElement(By.id("admin_summary")).click();
+        driver.findElement(By.cssSelector("#admin-summary-section-admin_plugins_menu > #customwareconnectorwebsection44 > li > a")).click();
+        //accept licence agreement
+        driver.findElement(By.name("submit")).click();
         driver.findElement(By.id("connectorId")).clear();
         driver.findElement(By.id("connectorId")).sendKeys("Sauce Labs");
         driver.findElement(By.id("add_submit")).click();
-
         new Select(driver.findElement(By.id("applink"))).selectByVisibleText("Sauce Labs");
         driver.findElement(By.id("add_submit")).click();
-        //launch the configuration wizard
+
         driver.findElement(By.id("launch_wizard")).click();
         driver.findElement(By.name("setupScreens")).click();
         new Select(driver.findElement(By.name("projects"))).selectByValue("SL");
         driver.findElement(By.id("create_config")).click();
     }
 
+    private void addApplicationLink() {
+        driver.findElement(By.cssSelector("#admin-summary-section-admin_plugins_menu > #ual_section > li > a")).click();
+        driver.findElement(By.id("add-first-application-link")).click();
+        driver.findElement(By.id("application-url")).clear();
+        driver.findElement(By.id("application-url")).sendKeys("https://saucelabs.com");
+        driver.findElement(By.cssSelector("#add-application-link-dialog > div.dialog-components > div.dialog-button-panel > button.button-panel-button.applinks-next-button")).click();
+        driver.findElement(By.name("application-name")).clear();
+        driver.findElement(By.name("application-name")).sendKeys("Sauce Labs");
+        new Select(driver.findElement(By.id("application-types"))).selectByVisibleText("Sauce Labs");
+        driver.findElement(By.cssSelector("#add-application-link-dialog > div.dialog-components > div.dialog-button-panel > button.button-panel-button.wizard-submit")).click();
+        driver.findElement(By.linkText("Configure")).click();
+        driver.findElement(By.cssSelector("#edit-application-link-dialog > div.dialog-components > ul.dialog-page-menu > li.page-menu-item.selected > button.item-button")).click();
+        driver.findElement(By.xpath("//div[@id='edit-application-link-dialog']/div/ul/li[2]/button")).click();
+        driver.switchTo().frame("outgoing-auth").switchTo().frame(0);
+        driver.findElement(By.id("saucelabs.username")).clear();
+        driver.findElement(By.name("saucelabs.username")).sendKeys("rossco_9_9");
+        driver.findElement(By.name("saucelabs.token")).clear();
+        driver.findElement(By.name("saucelabs.token")).sendKeys("44f0744c-1689-4418-af63-560303cbb37b");
+        driver.findElement(By.cssSelector("input.button")).click();
+        driver.switchTo().defaultContent();
+        driver.findElement(By.linkText("Close")).click();
+    }
+
+    private void createProject() {
+        driver.findElement(By.id("add_first_project")).click();
+        driver.findElement(By.name("name")).clear();
+        driver.findElement(By.name("name")).sendKeys("Sauce Labs");
+        driver.findElement(By.name("key")).clear();
+        driver.findElement(By.name("key")).sendKeys("SL");
+        driver.findElement(By.id("add-project-submit")).click();
+    }
+
+    private void login() {
+
+        driver.findElement(By.id("login-form-username")).clear();
+        driver.findElement(By.id("login-form-username")).sendKeys("admin");
+        driver.findElement(By.id("login-form-password")).clear();
+        driver.findElement(By.id("login-form-password")).sendKeys("admin");
+        driver.findElement(By.id("login-form-submit")).click();
+    }
+
     public void runExportToJira() throws Exception {
-        driver.get(baseUrl + "/plugins/servlet/customware/connector/issue/1/1/create.action?id=8d9d40cccc1192b9c9c88afc2c70ebb8");
-		new Select(driver.findElement(By.id("projectField"))).selectByVisibleText("Sauce Labs");
+
+        driver.get("https://saucelabs.com/bugs");
+        driver.findElement(By.linkText("Export to JIRA")).click();
+        driver.switchTo().window("_new");
+        new Select(driver.findElement(By.id("projectField"))).selectByVisibleText("Sauce Labs");
         driver.findElement(By.name("create")).click();
 
         //TODO verify that bug has been created
